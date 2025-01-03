@@ -1,0 +1,30 @@
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# 환경 변수 파일
+.env
+.env.local
+
+# 로그 파일
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node.js
+node_modules/
+
+# 빌드 아티팩트
+dist/
+build/
+
+# IDE/Editor 관련 파일
+.vscode/
+.idea/
+*.iml
+
+# Git 관련 파일
+.git/
