@@ -1,20 +1,16 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-// redux store 설정
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../stores/store';
 import { hideNewsDetail } from '../../../stores/newsSlice';
 import { NewsCard as NewsCardType } from '@/types/mainTyeps';
-
 import * as S from './LeftContainer.styles';
 import * as MS from '../Main.styles';
 import BackIcon from '../../../public/icons/back-icon.png';
 import FavoriteIcon from '../../../public/icons/favorite-icon.png';
 import ShareIcon from '../../../public/icons/scrap-icon2.png';
 import Image from 'next/image';
-
 import NewsCard from './NewsCard';
-import axios from 'axios';
 
 export default function LeftContainer() {
   const dispatch = useDispatch();
@@ -47,6 +43,8 @@ export default function LeftContainer() {
       console.log(responseData);
 
       const { data = [], totalPages } = responseData; // 기본값으로 빈 배열 설정
+      const urls = responseData.data.map((news: NewsCardType) => news.url); // URL 추출
+      preloadScreenshots(urls); // 스크린샷 미리 생성
 
       setNewsCard((prevNews) => [...prevNews, ...data]); // 기존 데이터에 추가
       setHasMore(currentPage < totalPages); // 다음 페이지가 있는지 확인
@@ -78,6 +76,49 @@ export default function LeftContainer() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loading, hasMore]);
 
+  // 스크린샷을 이용한 상세 뉴스 보기
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [screenshotLoading, setScreenshotLoading] = useState<boolean>(false); // 스크린샷 로딩 상태
+
+  useEffect(() => {
+    const fetchScreenshot = async () => {
+      if (!selectedNews) return;
+
+      setScreenshotLoading(true); // 스크린샷 로딩 상태 시작
+      const response = await fetch(
+        `/api/screenshot?url=${encodeURIComponent(selectedNews.url)}`,
+      );
+      const data = await response.json();
+      setScreenshot(data.screenshotUrl); // 스크린샷 URL 저장
+      setScreenshotLoading(false); // 로딩 상태 종료
+    };
+
+    if (selectedNews?.url) {
+      fetchScreenshot();
+    }
+  }, [selectedNews?.url]);
+
+  const [loadingScreenshots, setLoadingScreenshots] = useState(false); // 스크린샷 로딩 상태
+
+  // 스크린샷 미리 생성 함수
+  const preloadScreenshots = async (urls: string[]) => {
+    try {
+      setLoadingScreenshots(true);
+
+      // 모든 URL에 대해 스크린샷 API 호출
+      await Promise.all(
+        urls.map(async (url) => {
+          await fetch(`/api/screenshot?url=${encodeURIComponent(url)}`);
+        }),
+      );
+
+      setLoadingScreenshots(false);
+    } catch (error) {
+      console.error('Failed to preload screenshots:', error);
+      setLoadingScreenshots(false);
+    }
+  };
+
   if (isDetailView && selectedNews) {
     return (
       <MS.LeftContainer>
@@ -93,10 +134,35 @@ export default function LeftContainer() {
               <Image src={BackIcon} alt="뒤로 가기" width={20} height={20} />
             </S.IconButton>
           </S.ButtonBox>
-
-          <S.NewsTitle>{selectedNews.title}</S.NewsTitle>
-          <S.NewsSummary>{selectedNews.description}</S.NewsSummary>
-          <S.NewsSource>{selectedNews.url}</S.NewsSource>
+          {screenshotLoading ? (
+            // 로딩 중 애니메이션 표시
+            <S.LoadingContainer>
+              <S.LoadingSpinner />
+            </S.LoadingContainer>
+          ) : (
+            screenshot && (
+              // 스크린샷 표시 (가로에 맞추고 세로 스크롤 가능)
+              <div style={{ overflowY: 'scroll', maxHeight: '80vh' }}>
+                <img
+                  src={screenshot}
+                  alt="Screenshot"
+                  style={{ width: '100%', display: 'block' }}
+                />
+              </div>
+            )
+          )}
+          {/* 출처 표시 */}
+          <S.NewsSource>
+            <span>출처: </span>
+            <a
+              href={selectedNews.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#007bff', textDecoration: 'none' }}
+            >
+              {selectedNews.url}
+            </a>
+          </S.NewsSource>
         </S.DetailContainer>
       </MS.LeftContainer>
     );

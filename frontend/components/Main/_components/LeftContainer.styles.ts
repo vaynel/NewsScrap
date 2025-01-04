@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 export const DetailContainer = styled.div`
   background: #f3f3f7;
@@ -82,4 +82,40 @@ export const IconButton = styled.button`
     width: 20px;
     height: 20px;
   }
+`;
+
+/* S.IFrameContainer 스타일 */
+export const IFrameContainer = styled.iframe`
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+// 로딩 애니메이션 키프레임
+const spinner = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+// 로딩 스피너 스타일
+export const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 0, 0, 0.2); /* 회색 테두리 */
+  border-top: 4px solid #000; /* 검은색 상단 테두리 */
+  border-radius: 50%;
+  animation: ${spinner} 1s linear infinite; /* 회전 애니메이션 */
+`;
+
+// 로딩 컨테이너 스타일
+export const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* 부모 컨테이너 높이 */
 `;

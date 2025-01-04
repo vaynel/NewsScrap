@@ -96,18 +96,19 @@ export const NewsCardTop = styled.div`
   width: 100%;
 `;
 export const TopLeft = styled.div`
-  width: 80%;
+  /* width: 80%; */
 `;
 export const NewsSource = styled.span`
   font-size: 12px;
   visibility: hidden;
 `;
 export const NewsTitle = styled.h2`
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
   margin-top: 5px;
   width: 100%;
-  white-space: nowrap; // text 1줄로 유지
-  overflow: hidden; // 넘치는 text 숨기기
+  /* white-space: nowrap; // text 1줄로 유지 */
+  /* overflow: hidden; // 넘치는 text 숨기기 */
   text-overflow: ellipsis; // 넘치는 text ...으로 표시
 `;
 
