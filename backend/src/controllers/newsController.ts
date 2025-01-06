@@ -2,6 +2,7 @@ import News from '../models/News';
 import axios from 'axios';
 import Keyword from '../models/Keywords';
 import { generateScreenshot } from '../services/screenshotService';
+import { extractKeywords } from '../services/keywordService';
 import { NaverNews } from '../models/News';
 
 const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID!;
@@ -75,7 +76,7 @@ export const updateNewsFromNaverAPI = async (categories: string[]) => {
         if (!news.addKeywords) {
           console.error('addKeywords 메서드가 정의되지 않았습니다.');
         } else {
-          const keywords = extractKeywords(item.description);
+          const keywords = extractKeywords(item.title, item.description);
           const keywordInstances = await Promise.all(
             keywords.map((word) =>
               Keyword.findOrCreate({
@@ -94,13 +95,4 @@ export const updateNewsFromNaverAPI = async (categories: string[]) => {
   } catch (error) {
     console.error('뉴스 업데이트 중 오류 발생:', error);
   }
-};
-
-const extractKeywords = (description: string): string[] => {
-  const words = description
-    .toLowerCase() // 소문자 변환
-    .replace(/[^\w\s]/g, '') // 특수 문자 제거
-    .split(' ')
-    .filter((word) => word.length > 2); // 2글자 이상 단어만 추출
-  return [...new Set(words)].slice(0, 5); // 중복 제거 후 최대 5개 반환
 };

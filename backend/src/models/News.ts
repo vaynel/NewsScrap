@@ -82,4 +82,8 @@ News.init(
   },
 );
 
+// Keyword 모델과의 관계 정의
+News.belongsToMany(Keyword, { through: 'NewsKeywords', as: 'keywords' });
+Keyword.belongsToMany(News, { through: 'NewsKeywords', as: 'news' });
+
 export default News;
