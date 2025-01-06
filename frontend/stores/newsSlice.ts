@@ -7,7 +7,7 @@ interface NewsState {
     url: string;
     title: string;
     description: string;
-    categary: string;
+    category: string;
     pubData: Date;
     keywords: string[];
   } | null; // 선택된 뉴스 데이터

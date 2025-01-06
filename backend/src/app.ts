@@ -1,14 +1,10 @@
 import express from 'express';
 import session from 'express-session';
 import passport from './config/passport';
+import path from 'path';
 
 import { errorHandler } from './middlewares/errorHandler';
 import cors from 'cors';
-
-// import Router
-import authRouter from './routes/authRoute';
-import userRouter from './routes/userRoute';
-import naverNewsRouter from './routes/naverNewsRoute';
 
 import dotenv from 'dotenv';
 
@@ -40,12 +36,26 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// import Router
+import authRouter from './routes/authRoute';
+import userRouter from './routes/userRoute';
+import naverNewsRouter from './routes/naverNewsRoute';
+import screenshotRoutes from './routes/screenshotRoutes';
+
 // 라우터 연결
 app.use('/api/users', userRouter);
 // 인증 라우터 등록
 app.use('/auth', authRouter);
 
 app.use('/naverapi', naverNewsRouter);
+
+app.use('/api/screenshot', screenshotRoutes);
+
+// Public 디렉토리 정적 파일 서빙
+app.use(
+  '/screenshots',
+  express.static(path.join(__dirname, '../public/screenshots')),
+);
 
 // 에러 핸들링 미들웨어
 app.use(errorHandler);

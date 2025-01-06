@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../stores/store';
 import { hideNewsDetail } from '../../../stores/newsSlice';
@@ -43,8 +43,7 @@ export default function LeftContainer() {
       console.log(responseData);
 
       const { data = [], totalPages } = responseData; // 기본값으로 빈 배열 설정
-      const urls = responseData.data.map((news: NewsCardType) => news.url); // URL 추출
-      preloadScreenshots(urls); // 스크린샷 미리 생성
+      const urls = data.map((news: NewsCardType) => news.url); // URL 추출
 
       setNewsCard((prevNews) => [...prevNews, ...data]); // 기존 데이터에 추가
       setHasMore(currentPage < totalPages); // 다음 페이지가 있는지 확인
@@ -59,16 +58,6 @@ export default function LeftContainer() {
   useEffect(() => {
     if (hasMore) fetchNews(page);
   }, [page]);
-
-  // 스크롤 이벤트 핸들러
-  const handleScroll = () => {
-    if (loading || !hasMore) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-    if (scrollHeight - scrollTop <= clientHeight + 100) {
-      setPage((prevPage) => prevPage + 1); // 다음 페이지 요청
-    }
-  };
 
   // 스크롤 이벤트 등록
   useEffect(() => {
@@ -98,30 +87,32 @@ export default function LeftContainer() {
     }
   }, [selectedNews?.url]);
 
-  const [loadingScreenshots, setLoadingScreenshots] = useState(false); // 스크린샷 로딩 상태
+  // 무한 스크롤 이벤트 핸들러
+  const containerRef = useRef<HTMLDivElement | null>(null); // 타입 명시
 
-  // 스크린샷 미리 생성 함수
-  const preloadScreenshots = async (urls: string[]) => {
-    try {
-      setLoadingScreenshots(true);
+  const handleScroll = () => {
+    if (!containerRef.current || loading || !hasMore) return;
 
-      // 모든 URL에 대해 스크린샷 API 호출
-      await Promise.all(
-        urls.map(async (url) => {
-          await fetch(`/api/screenshot?url=${encodeURIComponent(url)}`);
-        }),
-      );
-
-      setLoadingScreenshots(false);
-    } catch (error) {
-      console.error('Failed to preload screenshots:', error);
-      setLoadingScreenshots(false);
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    if (scrollHeight - scrollTop <= clientHeight + 100) {
+      setPage((prevPage) => prevPage + 1);
     }
   };
 
+  // 스크롤 이벤트 등록
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [loading, hasMore]);
+
   if (isDetailView && selectedNews) {
     return (
-      <MS.LeftContainer>
+      <MS.LeftContainer ref={containerRef}>
         <S.DetailContainer>
           <S.ButtonBox>
             <S.IconButton>
@@ -169,7 +160,7 @@ export default function LeftContainer() {
   }
 
   return (
-    <MS.LeftContainer>
+    <MS.LeftContainer ref={containerRef}>
       <MS.NewsContainer>
         {newsCard.length > 0 ? (
           newsCard.map((news) => <NewsCard newsCard={news} key={news.id} />)

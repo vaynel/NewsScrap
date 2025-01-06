@@ -8,7 +8,18 @@ interface NewsAttributes {
   category: string;
   description: string;
   url: string;
-  pubData: Date;
+  pubDate: Date;
+  isScreenShot: boolean;
+}
+
+export interface NaverNews {
+  id: number;
+  title: string;
+  category: string;
+  description: string;
+  link: string;
+  pubDate: Date;
+  isScreenShot: boolean;
 }
 
 interface NewsCreationAttributes extends Optional<NewsAttributes, 'id'> {}
@@ -22,7 +33,8 @@ export class News
   public category!: string;
   public description!: string;
   public url!: string;
-  public pubData!: Date;
+  public pubDate!: Date;
+  public isScreenShot!: boolean;
 
   // 관계 메서드 타입 정의
   public addKeywords!: (keywords: Keyword[]) => Promise<void>;
@@ -32,7 +44,6 @@ export class News
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
-
 News.init(
   {
     id: {
@@ -57,8 +68,11 @@ News.init(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    pubData: {
+    pubDate: {
       type: DataTypes.DATE,
+    },
+    isScreenShot: {
+      type: DataTypes.BOOLEAN,
     },
   },
   {

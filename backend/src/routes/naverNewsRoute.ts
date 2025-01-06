@@ -20,17 +20,22 @@ router.post('/news', async (req, res) => {
   }
 });
 
-// 뉴스 데이터 가져오기
+// 뉴스 데이터 가져오기 (카테고리 필터 추가)
 router.get('/newsdata', async (req, res) => {
-  const { page = 1, limit = 10 } = req.query; // 기본값: 1페이지, 10개
+  const { page = 1, limit = 10, category } = req.query; // 카테고리 추가
   const offset =
     (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10);
 
   try {
+    const whereClause = category
+      ? { category: category as string } // 카테고리가 있으면 필터 적용
+      : {};
+
     const newsData = await News.findAndCountAll({
+      where: whereClause,
       limit: parseInt(limit as string, 10),
       offset,
-      order: [['pubData', 'DESC']], // 최신 뉴스 순으로 정렬
+      order: [['pubDate', 'DESC']], // 최신 뉴스 순으로 정렬
     });
 
     res.json({

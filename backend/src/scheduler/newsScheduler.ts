@@ -22,7 +22,7 @@ export const startNewsUpdateScheduler = () => {
 
 // export const startNewsUpdateScheduler = () => {
 //   // 크론 표현식: "*/20 * * * *" => 매 20분마다 실행
-//   schedule.scheduleJob('*/20 * * * *', () => {
+//   schedule.scheduleJob('*/5 * * * *', () => {
 //     const now = new Date();
 //     console.log(`[${now.toLocaleTimeString()}] 뉴스 업데이트 시작`);
 //     updateNewsFromNaverAPI(categories);

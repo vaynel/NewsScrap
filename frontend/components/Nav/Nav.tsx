@@ -14,8 +14,16 @@ export default function Nav() {
   };
 
   const [selected, setSelected] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const sections = ['스포츠', '연예', '정치', '과학'];
+  const categories = ['전체', '연예', '정치', '스포츠', '과학']; // 카테고리 목록
+
+  // 카테고리 변경 처리
+  // const handleCategoryChange = (category: string) => {
+  //   setSelectedCategory(category);
+  //   setPage(1);
+  //   fetchNews(1, category); // 선택된 카테고리로 데이터 요청
+  // };
 
   // 로그인 상태 확인 (예: 로컬 스토리지나 API를 통해 확인)
   useEffect(() => {
@@ -57,7 +65,7 @@ export default function Nav() {
       <Image width={50} height={41} src={MainIcon} alt="scrap icon" />
       <S.MyLink href="/">페이퍼픽</S.MyLink>
       <S.SecstionBox>
-        {sections.map((section, index) => (
+        {categories.map((section, index) => (
           <S.SectionNameSpan
             key={index}
             className={selected === index ? 'selected' : ''}

@@ -1,6 +1,8 @@
 import News from '../models/News';
 import axios from 'axios';
 import Keyword from '../models/Keywords';
+import { generateScreenshot } from '../services/screenshotService';
+import { NaverNews } from '../models/News';
 
 const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID!;
 const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET!;
@@ -44,40 +46,32 @@ export const updateNewsFromNaverAPI = async (categories: string[]) => {
 
       const newsItems = response.data.items;
 
-      for (const item of newsItems) {
-        // 뉴스 저장
-        // const [news] = await News.findOrCreate({
-        //   where: { title: item.title }, // 제목 중복 방지
-        //   defaults: {
-        //     title: item.title, // title 추가
-        //     category,
-        //     description: item.description,
-        //   },
-        // });
-
-        // // 키워드 추출 및 저장
-        // const keywords = extractKeywords(item.description);
-        // const keywordInstances = await Promise.all(
-        //   keywords.map((word) =>
-        //     Keyword.findOrCreate({
-        //       where: { keyword: word },
-        //     }),
-        //   ),
-        // );
-
-        // await news.addKeywords(keywordInstances.map(([keyword]) => keyword));
-
-        const [news] = await News.findOrCreate({
+      // 병렬 처리를 위해 모든 작업을 배열로 저장
+      const screenshotPromises = newsItems.map(async (item: NaverNews) => {
+        const [news, created] = await News.findOrCreate({
           where: { title: item.title },
           defaults: {
             title: item.title,
             category,
             description: item.description,
             url: item.link,
-            pubData: item.pubDate,
+            pubDate: new Date(item.pubDate), // pubDate 변환
+            isScreenShot: false,
           },
         });
 
+        // 새로운 뉴스에 대해 스크린샷 생성
+        if (created) {
+          try {
+            const screenshotUrl = await generateScreenshot(news.url); // 스크린샷 생성
+            await news.update({ isScreenShot: true }); // 스크린샷 상태 업데이트
+            console.log(`스크린샷 생성 완료: ${screenshotUrl}`);
+          } catch (screenshotError) {
+            console.error(`스크린샷 생성 실패: ${news.url}`, screenshotError);
+          }
+        }
+
+        // 키워드 추가 처리
         if (!news.addKeywords) {
           console.error('addKeywords 메서드가 정의되지 않았습니다.');
         } else {
@@ -91,7 +85,10 @@ export const updateNewsFromNaverAPI = async (categories: string[]) => {
           );
           await news.addKeywords(keywordInstances.map(([keyword]) => keyword));
         }
-      }
+      });
+
+      // 모든 스크린샷 작업 병렬 실행
+      await Promise.all(screenshotPromises);
     }
     console.log('뉴스 업데이트 완료');
   } catch (error) {
