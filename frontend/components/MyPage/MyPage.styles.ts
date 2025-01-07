@@ -1,6 +1,6 @@
-import Image from 'next/image';
+// import Image from 'next/image';
 import styled from 'styled-components';
-import { MainContainer } from '../Common/Common.style';
+// import { MainContainer } from '../Common/Common.style';
 
 // left
 export const LeftContainer = styled.div`

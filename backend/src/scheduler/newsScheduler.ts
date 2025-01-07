@@ -1,5 +1,8 @@
 import schedule from 'node-schedule';
-import { updateNewsFromNaverAPI } from '../controllers/newsController';
+import {
+  updateNewsFromNaverAPI,
+  TestupdateNewsFromNaverAPI,
+} from '../controllers/newsController';
 
 const categories = ['스포츠', '정치', '연애', 'IT']; // 카테고리 설정
 
@@ -22,11 +25,17 @@ const categories = ['스포츠', '정치', '연애', 'IT']; // 카테고리 설�
 
 export const startNewsUpdateScheduler = () => {
   // 크론 표현식: "*/20 * * * *" => 매 20분마다 실행
-  schedule.scheduleJob('*/5 * * * *', () => {
+  schedule.scheduleJob('*/40 * * * *', () => {
     const now = new Date();
     console.log(`[${now.toLocaleTimeString()}] 뉴스 업데이트 시작`);
     updateNewsFromNaverAPI(categories);
   });
 
   console.log('20분마다 실행되는 뉴스 업데이트 스케줄러가 설정되었습니다.');
+};
+
+export const testNews = () => {
+  TestupdateNewsFromNaverAPI(categories);
+  const now = new Date();
+  console.log(`[${now.toLocaleTimeString()}] 뉴스 업데이트 시작`);
 };

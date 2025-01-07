@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { MainContainer } from '../Common/Common.style';
 import * as S from './Main.styles';
 
@@ -9,23 +9,10 @@ import Search from './_components/Search';
 import LeftContainer from './_components/leftContainer';
 
 import { useKeywords } from '@/hooks/useKeywords';
-import { useScroll } from '@/hooks/useScroll';
 
 export default function Main() {
   const { keywords, search, handleSubmit, handleSearch, handleDelete } =
     useKeywords(['스포츠', '정치', 'IT']);
-  //
-
-  // useEffect(() => {
-  //   // 더미 데이터에서 처음 12개만 로드
-  //   setNewsCard(
-  //     newsData.slice(0, loadedItems).filter((item) => item !== undefined)
-  //   );
-  // }, [loadedItems]);
-
-  // const topRateNews = rankingData
-  //   .sort((a, b) => b.views - a.views)
-  //   .slice(0, 10);
 
   return (
     <MainContainer>
@@ -40,8 +27,6 @@ export default function Main() {
           />
           {/* Keyword */}
           <Keyword keywords={keywords} handleDelete={handleDelete} />
-          {/* Ranking */}
-          {/* <Ranking newsRanking={topRateNews} /> */}
         </S.RightContainer>
       </div>
 
@@ -50,17 +35,3 @@ export default function Main() {
     </MainContainer>
   );
 }
-
-// {/* <S.LeftContainer>
-//         {/* Keyword */}
-//         {/* <Keyword keywords={keywords} handleDelete={handleDelete} /> */}
-
-//         {showNewsCard ? (
-//           <S.NewsContainer>
-//             {/* News Card */}
-//             <NewsCard newsCard={newsCard} />
-//           </S.NewsContainer> // 로그인 버튼 표시
-//         ) : (
-//           <S.NewsPage />
-//         )}
-//       </S.LeftContainer> */}

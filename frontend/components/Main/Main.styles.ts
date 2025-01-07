@@ -37,15 +37,21 @@ export const KeywordContainer = styled(MainContainer)`
   margin-top: 22px;
   /* margin: 0; */
 `;
-export const Keyword = styled.span`
+export const Keyword = styled.span<{ selected: boolean }>`
   margin-right: 15px;
-  border: 1px solid #c3ea97;
-  background-color: #c3ea97;
+  border: 3px solid ${(props) => (props.selected ? '#6cb92e' : '#c3ea97')};
+  background-color: ${(props) => (props.selected ? '#c3ea97' : '#c3ea97')};
+  color: ${(props) => (props.selected ? '#000' : '#000')};
   padding: 4px 4px 4px 12px;
   font-size: 14px;
-  /* padding: 4px; */
   border-radius: 12px;
   margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+
+  &:hover {
+    background-color: ${(props) => (props.selected ? '#5aa526' : '#a2d16e')};
+  }
 `;
 export const DeleteBtn = styled.button`
   margin-left: 2px;
@@ -66,11 +72,16 @@ export const NewsContainer = styled.div`
   /* margin-top: 15px; */
 `;
 
-export const NewsCard = styled.div`
-  border: 1px solid var(--blackColor);
+export const NewsCard = styled.div<{ isScreenShot: boolean }>`
+  border: 2px solid
+    ${({ isScreenShot }) => (isScreenShot ? '#5aa526' : 'var(--blackColor)')}; /* 테두리 색상 */
+
+  border: 2px solid var(--blackColor);
   /* width: 420px; */
   /* height: 240px; */
   border-radius: 20px;
+  background-color: ${({ isScreenShot }) =>
+    isScreenShot ? '#f0fff4' : '#f9f9f9'}; /* 배경색 강조 */
   width: 32%;
   padding: 15px 15px 70px 15px;
   margin-bottom: 2%;
@@ -110,6 +121,30 @@ export const NewsTitle = styled.h2`
   /* white-space: nowrap; // text 1줄로 유지 */
   /* overflow: hidden; // 넘치는 text 숨기기 */
   text-overflow: ellipsis; // 넘치는 text ...으로 표시
+
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--blackColor);
+`;
+
+// Keywords 배지 스타일
+export const KeywordsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap; /* 키워드들이 한 줄에 넘치면 다음 줄로 */
+  margin-top: 10px;
+  gap: 8px; /* 키워드 간 간격 */
+`;
+
+export const KeywordBadge = styled.span`
+  background-color: #5aa526; /* 배지 배경색 */
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 10px; /* 텍스트 여백 */
+  border-radius: 12px; /* 둥근 모서리 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  cursor: default; /* 배지는 클릭 불가 */
 `;
 
 export const TopRight = styled.div`
@@ -141,6 +176,11 @@ export const NewsCardSummary = styled.div`
   -webkit-box-orient: vertical; // 세로 방향으로 자르기
   overflow: hidden; // 넘치는 text 숨기기
   text-overflow: ellipsis; //넘치는 text ...로 표시
+
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.5; /* 가독성을 위한 줄 간격 */
+  margin-bottom: 0; /* 본문은 아래쪽 여백 제거 */
 `;
 
 // news bottom

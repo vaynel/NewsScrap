@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../stores/store';
-import { hideNewsDetail } from '../../../stores/newsSlice';
+import { hideNewsDetail, setPage } from '../../../stores/newsSlice';
 import { NewsCard as NewsCardType } from '@/types/mainTyeps';
 import * as S from './LeftContainer.styles';
 import * as MS from '../Main.styles';
@@ -14,92 +14,73 @@ import NewsCard from './NewsCard';
 
 export default function LeftContainer() {
   const dispatch = useDispatch();
-  const { isDetailView, selectedNews } = useSelector(
+  const { isDetailView, selectedNews, page, category } = useSelector(
     (state: RootState) => state.news,
   );
-
-  const handleBack = () => {
-    dispatch(hideNewsDetail()); // 목록으로 돌아가기
-  };
-
   const [newsCard, setNewsCard] = useState<NewsCardType[]>([]);
-  const [page, setPage] = useState<number>(1); // 페이지 번호
-  const [loading, setLoading] = useState<boolean>(false); // 로딩 상태
-  const [hasMore, setHasMore] = useState<boolean>(true); // 추가 데이터 여부
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
-  const fetchNews = async (currentPage: number) => {
+  const fetchNews = useCallback(async () => {
     try {
-      setLoading(true); // 로딩 상태 시작
-
+      setLoading(true);
       const response = await fetch(
-        `/api/newsdata?page=${currentPage}&limit=12`,
+        `/api/newsdata?page=${page}&limit=12${
+          category !== '전체' ? `&category=${category}` : ''
+        }`,
       );
+
       if (!response.ok) {
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
       const responseData = await response.json();
-
-      console.log(responseData);
-
-      const { data = [], totalPages } = responseData; // 기본값으로 빈 배열 설정
-      const urls = data.map((news: NewsCardType) => news.url); // URL 추출
-
-      setNewsCard((prevNews) => [...prevNews, ...data]); // 기존 데이터에 추가
-      setHasMore(currentPage < totalPages); // 다음 페이지가 있는지 확인
-      setLoading(false); // 로딩 상태 종료
+      const { data = [], totalPages } = responseData;
+      setNewsCard((prevNews) => (page === 1 ? data : [...prevNews, ...data]));
+      setHasMore(page < totalPages);
     } catch (error) {
       console.error('뉴스 데이터를 가져오는 중 오류 발생:', error);
+    } finally {
       setLoading(false);
     }
-  };
+  }, [page, category]);
 
-  // 초기 데이터 로드 및 페이지 변경 시 데이터 요청
   useEffect(() => {
-    if (hasMore) fetchNews(page);
-  }, [page]);
+    fetchNews();
+  }, [fetchNews]);
 
-  // 스크롤 이벤트 등록
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loading, hasMore]);
-
-  // 스크린샷을 이용한 상세 뉴스 보기
   const [screenshot, setScreenshot] = useState<string | null>(null);
-  const [screenshotLoading, setScreenshotLoading] = useState<boolean>(false); // 스크린샷 로딩 상태
+  const [screenshotLoading, setScreenshotLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchScreenshot = async () => {
       if (!selectedNews) return;
 
-      setScreenshotLoading(true); // 스크린샷 로딩 상태 시작
+      setScreenshotLoading(true);
       const response = await fetch(
         `/api/screenshot?url=${encodeURIComponent(selectedNews.url)}`,
       );
       const data = await response.json();
-      setScreenshot(data.screenshotUrl); // 스크린샷 URL 저장
-      setScreenshotLoading(false); // 로딩 상태 종료
+      setScreenshot(data.screenshotUrl);
+      setScreenshotLoading(false);
     };
 
     if (selectedNews?.url) {
       fetchScreenshot();
     }
-  }, [selectedNews?.url]);
+  }, [selectedNews]); // ✅ 의존성 배열 수정
 
-  // 무한 스크롤 이벤트 핸들러
-  const containerRef = useRef<HTMLDivElement | null>(null); // 타입 명시
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (!containerRef.current || loading || !hasMore) return;
 
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     if (scrollHeight - scrollTop <= clientHeight + 100) {
-      setPage((prevPage) => prevPage + 1);
+      dispatch(setPage(page + 1));
     }
-  };
+  }, [loading, hasMore, page, dispatch]); // ✅ useCallback으로 감싸기
 
-  // 스크롤 이벤트 등록
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -108,7 +89,11 @@ export default function LeftContainer() {
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [loading, hasMore]);
+  }, [handleScroll]); // ✅ 의존성 배열 수정
+
+  const handleBack = () => {
+    dispatch(hideNewsDetail());
+  };
 
   if (isDetailView && selectedNews) {
     return (
@@ -126,23 +111,24 @@ export default function LeftContainer() {
             </S.IconButton>
           </S.ButtonBox>
           {screenshotLoading ? (
-            // 로딩 중 애니메이션 표시
             <S.LoadingContainer>
               <S.LoadingSpinner />
             </S.LoadingContainer>
           ) : (
             screenshot && (
-              // 스크린샷 표시 (가로에 맞추고 세로 스크롤 가능)
               <div style={{ overflowY: 'scroll', maxHeight: '80vh' }}>
-                <img
+                <Image
                   src={screenshot}
                   alt="Screenshot"
-                  style={{ width: '100%', display: 'block' }}
+                  layout="responsive" // 부모 요소에 맞게 반응형으로 크기 조절
+                  width={800} // 이미지 너비 (원본 크기 기준)
+                  height={600} // 이미지 높이 (원본 크기 기준)
+                  style={{ width: '100%', display: 'block' }} // 스타일 적용
+                  unoptimized // Next.js 이미지 최적화를 비활성화
                 />
               </div>
             )
           )}
-          {/* 출처 표시 */}
           <S.NewsSource>
             <span>출처: </span>
             <a

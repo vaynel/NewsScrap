@@ -1,6 +1,6 @@
 import app from './app';
 import { sequelize } from './config/database';
-import { startNewsUpdateScheduler } from './scheduler/newsScheduler';
+import { startNewsUpdateScheduler, testNews } from './scheduler/newsScheduler';
 
 const PORT = process.env.PORT || 4000;
 
@@ -26,5 +26,6 @@ async function startServer() {
 
 // 뉴스 업데이트 스케줄러 시작
 startNewsUpdateScheduler();
+// testNews();
 
 startServer();

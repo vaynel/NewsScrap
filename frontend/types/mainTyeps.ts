@@ -3,9 +3,10 @@ export type NewsCard = {
   url: string;
   title: string;
   description: string;
-  categary: string;
+  category: string;
   pubData: Date;
   keywords: string[];
+  isScreenShot: boolean;
 };
 
 export type Ranking = {
