@@ -1,5 +1,6 @@
 import express from 'express';
 import News from '../models/News';
+import Keyword from '../models/Keywords';
 import { saveNewsWithKeywords } from '../controllers/newsController';
 
 const router = express.Router();
@@ -40,10 +41,21 @@ router.get('/newsdata', async (req, res) => {
       limit: parseInt(limit as string, 10),
       offset,
       order: [['pubDate', 'DESC']], // 최신 뉴스 순으로 정렬
+      include: [
+        {
+          model: Keyword, // 키워드 데이터를 포함
+          as: 'keywords', // 관계 정의에서 설정한 alias와 동일해야 함
+          attributes: ['id', 'keyword'], // 필요한 필드만 선택
+        },
+      ],
     });
+    // console.log(newsData);
 
     res.json({
-      data: newsData.rows,
+      data: newsData.rows.map((news) => ({
+        ...news.toJSON(),
+        // 키워드 배열로 변환
+      })),
       total: newsData.count,
       currentPage: parseInt(page as string, 10),
       totalPages: Math.ceil(newsData.count / parseInt(limit as string, 10)),

@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "lint:fix": "eslint 'src/**/*.{js,ts}' --fix",
-    "format": "prettier --write 'src/**/*.{js,ts,json,md}'"
+    "format": "prettier --write 'src/**/*.{js,ts,json,md}'",
+    "start": "node dist/server.js",
+    "build": "yarn clean && tsc",
+    "clean": "rm -rf dist"
   },
   "husky": {
     "hooks": {
@@ -25,7 +28,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.723.0",
     "async-sema": "^3.1.1",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.7.9",
     "backend": "file:",
     "bcrypt": "^5.1.1",

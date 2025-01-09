@@ -1,0 +1,11 @@
+node_modules
+.git
+.cache
+logs
+tmp
+
+dist
+Dockerfile
+docker-compose.yml
+.env
+

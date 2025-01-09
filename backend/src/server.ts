@@ -25,7 +25,7 @@ async function startServer() {
 }
 
 // 뉴스 업데이트 스케줄러 시작
-startNewsUpdateScheduler();
-// testNews();
+// startNewsUpdateScheduler();
+testNews();
 
 startServer();
