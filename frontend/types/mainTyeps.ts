@@ -5,8 +5,13 @@ export type NewsCard = {
   description: string;
   category: string;
   pubData: Date;
-  keywords: string[];
+  keywords: Keyword[];
   isScreenShot: boolean;
+};
+
+type Keyword = {
+  id: number;
+  keyword: string;
 };
 
 export type Ranking = {

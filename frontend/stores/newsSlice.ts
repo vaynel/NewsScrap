@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+type Keyword = {
+  id: number;
+  keyword: string;
+};
 interface SelectedNews {
   id: number;
   url: string;
@@ -7,7 +11,7 @@ interface SelectedNews {
   description: string;
   category: string; // 수정: 오타 'categary' -> 'category'
   pubData: Date;
-  keywords: string[];
+  keywords: Keyword[];
 }
 
 interface NewsState {

@@ -39,7 +39,7 @@ export const TestupdateNewsFromNaverAPI = async (categories: string[]) => {
           },
           params: {
             query: category,
-            display: 1, // 카테고리별 최대 10개 기사 가져오기
+            display: 10, // 카테고리별 최대 10개 기사 가져오기
             sort: 'date', // 최신순 정렬
           },
         },
@@ -66,9 +66,9 @@ export const TestupdateNewsFromNaverAPI = async (categories: string[]) => {
           try {
             const screenshotUrl = await generateScreenshot(news.url); // 스크린샷 생성
             await news.update({ isScreenShot: true }); // 스크린샷 상태 업데이트
-            console.log(`스크린샷 생성 완료: ${screenshotUrl}`);
+            // console.log(`스크린샷 생성 완료: ${screenshotUrl}`);
           } catch (screenshotError) {
-            console.error(`스크린샷 생성 실패: ${news.url}`, screenshotError);
+            // console.error(`스크린샷 생성 실패: ${news.url}`, screenshotError);
           }
         }
 

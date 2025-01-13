@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { chromium } from 'playwright';
+import { Cluster } from 'puppeteer-cluster';
 import crypto from 'crypto';
 import News from '../models/News';
 import {
@@ -9,6 +9,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import pino from 'pino';
+import { error } from 'console';
 
 // 로깅 설정
 const logger = pino();
@@ -22,7 +23,7 @@ if (!BUCKET_NAME || !REGION) {
     'AWS_BUCKET_NAME 또는 AWS_REGION 환경 변수가 설정되지 않았습니다.',
   );
 } else {
-  logger.info(`BUCKET_NAME: ${BUCKET_NAME}`);
+  // logger.info(`BUCKET_NAME: ${BUCKET_NAME}`);
 }
 
 const s3 = new S3Client({ region: REGION });
@@ -36,24 +37,38 @@ if (!fs.existsSync(screenshotPath)) {
   logger.info('스크린샷 디렉토리 있습니다.');
 }
 
-// Playwright 브라우저 초기화
-let browser: any = null;
+// Puppeteer 클러스터 초기화
+let cluster: Cluster<{ url: string; filePath: string }> | null = null;
 
-const initializeBrowser = async () => {
-  if (!browser) {
-    browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+const initializeCluster = async () => {
+  if (!cluster) {
+    cluster = await Cluster.launch({
+      concurrency: Cluster.CONCURRENCY_PAGE,
+      maxConcurrency: 2, // 동시에 처리할 작업 수
+      puppeteerOptions: {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      },
     });
-    logger.info('Playwright 브라우저 초기화 완료');
+
+    // 클러스터 작업 정의
+    cluster.task(async ({ page, data: { url, filePath } }) => {
+      await page.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+      );
+      await page.goto(url, { waitUntil: 'networkidle2' });
+      await page.setViewport({ width: 1280, height: 720 });
+      await page.screenshot({ path: filePath, fullPage: true });
+      console.log(`스크린샷 생성 완료: ${filePath}`);
+    });
   }
 };
 
-// 브라우저 종료 처리
+// Puppeteer 클러스터 종료 처리
 process.on('SIGINT', async () => {
-  if (browser) {
-    await browser.close();
-    logger.info('Playwright 브라우저 종료 완료');
+  if (cluster) {
+    await cluster.close();
+    logger.info('Puppeteer 클러스터 종료 완료');
   }
   process.exit();
 });
@@ -97,16 +112,14 @@ export const generateScreenshot = async (url: string): Promise<string> => {
     logger.info('S3에 파일이 존재하지 않습니다. 새로 생성합니다.');
   }
 
-  // Step 2: Playwright로 스크린샷 생성
-  await initializeBrowser();
+  // Step 2: Puppeteer로 스크린샷 생성
+  await initializeCluster();
   const tempFilePath = path.join(screenshotPath, fileName);
+  if (!cluster) {
+    throw new Error('Puppeteer 클러스터가 초기화되지 않았습니다.');
+  }
   try {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto(url, { waitUntil: 'networkidle' });
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.screenshot({ path: tempFilePath, fullPage: true });
-    logger.info(`스크린샷 생성 완료: ${tempFilePath}`);
+    await cluster.execute({ url, filePath: tempFilePath });
 
     // Step 3: S3에 파일 업로드
     const fileContent = fs.readFileSync(tempFilePath);
@@ -136,7 +149,7 @@ export const generateScreenshot = async (url: string): Promise<string> => {
 export const generateScreenshotsForUrls = async (
   urls: string[],
 ): Promise<string[]> => {
-  await initializeBrowser();
+  await initializeCluster();
 
   const results = await Promise.all(
     urls.map((url) =>

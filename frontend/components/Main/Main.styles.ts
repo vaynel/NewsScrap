@@ -71,8 +71,9 @@ export const NewsContainer = styled.div`
   padding-right: 38px;
   /* margin-top: 15px; */
 `;
-
-export const NewsCard = styled.div<{ isScreenShot: boolean }>`
+export const NewsCard = styled.div.attrs<{ isScreenShot: boolean }>(() => ({
+  isScreenShot: undefined, // DOM에 전달되지 않도록 제거
+}))<{ isScreenShot: boolean }>`
   border: 2px solid
     ${({ isScreenShot }) => (isScreenShot ? '#5aa526' : 'var(--blackColor)')}; /* 테두리 색상 */
 
@@ -83,7 +84,7 @@ export const NewsCard = styled.div<{ isScreenShot: boolean }>`
   background-color: ${({ isScreenShot }) =>
     isScreenShot ? '#f0fff4' : '#f9f9f9'}; /* 배경색 강조 */
   width: 32%;
-  padding: 15px 15px 70px 15px;
+  padding: 15px 15px 15px 15px;
   margin-bottom: 2%;
   background-color: #d9d9d9;
   box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.15);

@@ -23,9 +23,11 @@ router.post('/news', async (req, res) => {
 
 // 뉴스 데이터 가져오기 (카테고리 필터 추가)
 router.get('/newsdata', async (req, res) => {
+  console.log('get : /naver/newsdata');
   const { page = 1, limit = 10, category } = req.query; // 카테고리 추가
 
   console.log(req.query);
+  console.log('요청 파라미터:', req.query);
   if (category) console.log(category);
   else console.log('cagetory 없음');
   const offset =

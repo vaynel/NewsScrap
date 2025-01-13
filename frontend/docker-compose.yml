@@ -1,0 +1,16 @@
+services:
+  nextjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    networks:
+      - shared-network
+    environment:
+      BACKEND_URL: http://backend:4000
+      NODE_ENV: production
+
+networks:
+  shared-network:
+    name: shared-network

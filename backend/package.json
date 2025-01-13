@@ -47,6 +47,8 @@
     "p-limit": "^6.2.0",
     "passport": "^0.7.0",
     "passport-kakao": "^1.0.1",
+    "pino": "^9.6.0",
+    "playwright": "^1.49.1",
     "puppeteer": "^23.11.1",
     "puppeteer-cluster": "^0.24.0",
     "qs": "^6.13.1",

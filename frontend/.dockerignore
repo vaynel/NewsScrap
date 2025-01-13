@@ -1,0 +1,6 @@
+node_modules
+.next
+public/screenshots
+.env
+.DS_Store
+*.log

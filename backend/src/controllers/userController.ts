@@ -39,6 +39,7 @@ export async function createUser(
 }
 
 export function getUserProfile(req: Request, res: Response) {
+  console.log('get : /user/getuserprofile');
   if (!req.user) {
     res.status(401).json({ message: '인증 정보가 없습니다.' });
     return; // 명확히 종료

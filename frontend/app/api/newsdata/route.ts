@@ -12,13 +12,16 @@ export async function GET(req: NextRequest) {
 
     if (category) {
       // 카테고리가 있는 경우
-      fetchUrl = `http://localhost:4000/naverapi/newsdata?page=${page}&limit=${limit}&category=${encodeURIComponent(
+      fetchUrl = `${
+        process.env.BACKEND_URL
+      }/naverapi/newsdata?page=${page}&limit=${limit}&category=${encodeURIComponent(
         category,
       )}`;
     } else {
       // 카테고리가 없는 경우
-      fetchUrl = `http://localhost:4000/naverapi/newsdata?page=${page}&limit=${limit}`;
+      fetchUrl = `${process.env.BACKEND_URL}/naverapi/newsdata?page=${page}&limit=${limit}`;
     }
+    console.log('보내는 backend API : ' + fetchUrl);
 
     // 백엔드로 요청 보내기
     const backendResponse = await fetch(fetchUrl);

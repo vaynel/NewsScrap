@@ -4,8 +4,37 @@ FROM node:20-alpine
 # 2. 작업 디렉토리 설정
 WORKDIR /app
 
-# 3. 의존성 설치 (최신 이미지 업데이트 포함)
-COPY package.json yarn.lock ./
+# 3. 필요한 패키지 설치
+RUN apk add --no-cache \
+  python3 \
+  python3-dev \
+  py3-pip \
+  py3-wheel \
+  gcc \
+  g++ \
+  make \
+  openjdk11 \
+  musl-dev \
+  linux-headers \
+  libffi-dev \
+  bash
+
+# 4. Java 환경 변수 설정
+ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+ENV PATH="$JAVA_HOME/bin:$PATH"
+ENV LD_LIBRARY_PATH="$JAVA_HOME/lib/server:$LD_LIBRARY_PATH"
+
+# 4. Python 가상 환경 생성 및 konlpy 설치
+RUN python3 -m venv /app/venv \
+  && . /app/venv/bin/activate \
+  && pip install --upgrade pip \
+  && pip install konlpy \
+  && deactivate
+
+# Python 가상환경 PATH 설정
+ENV PATH="/app/venv/bin:$PATH"
+
+# 5. Playwright 브라우저 및 기타 설치
 RUN apk add --no-cache \
   chromium \
   nss \
@@ -13,21 +42,32 @@ RUN apk add --no-cache \
   harfbuzz \
   ca-certificates \
   ttf-freefont \
-  python3 \
-  py3-pip && \
-  yarn install
+  libxcomposite \
+  libxrandr \
+  libxi \
+  libxcursor \
+  libxdamage \
+  libxrender \
+  libxkbcommon \
+  alsa-lib \
+  fontconfig \
+  dbus \
+  dumb-init
 
-# 4. 소스 코드 복사
+RUN npm install playwright && npx playwright install chromium
+
+# 6. 프로젝트 파일 복사 및 빌드
+COPY package.json yarn.lock ./
+RUN yarn install
 COPY . .
-
-# 5. Puppeteer 환경 변수 설정
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# 6. 빌드 (TypeScript 사용 시)
 RUN yarn build
+
+# Python 스크립트 복사
+RUN mkdir -p dist/services
+COPY ./src/services/keyword_extractor.py ./dist/services/keyword_extractor.py
 
 # 7. 포트 노출
 EXPOSE 4000
 
 # 8. 애플리케이션 실행
-CMD ["yarn", "start"]
+CMD ["node", "dist/server.js"]

@@ -40,11 +40,11 @@ export default function NewsCard({ newsCard }: NewsCardProps) {
         {decodeHtmlEntities(newsCard.description)}
       </S.NewsCardSummary>
       <S.KeywordsContainer>
-        {newsCard.keywords &&
-          newsCard.keywords.length > 0 &&
-          newsCard.keywords.map((keyword, index) => (
-            <S.KeywordBadge key={index}>{keyword}</S.KeywordBadge>
-          ))}
+        {newsCard.keywords.map((keywordObj, index) => (
+          <S.KeywordBadge key={keywordObj.id || index}>
+            {keywordObj.keyword} {/* 객체의 keyword 필드만 렌더링 */}
+          </S.KeywordBadge>
+        ))}
       </S.KeywordsContainer>
     </S.NewsCard>
   );

@@ -1,0 +1,31 @@
+# 1. Node.js 이미지 선택
+FROM node:20-alpine AS builder
+
+# 2. 작업 디렉토리 설정
+WORKDIR /app
+
+# 3. 패키지 파일 복사 및 의존성 설치
+COPY package.json yarn.lock ./
+RUN yarn install
+
+# 4. 애플리케이션 소스 복사
+COPY . .
+
+# 5. Next.js 빌드
+RUN yarn build
+
+# 6. 런타임 환경 설정
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# 7. 빌드된 파일 및 필요한 파일 복사
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# 8. 환경 변수 설정 (선택 사항)
+ENV NODE_ENV=production
+
+# 9. 애플리케이션 시작
+CMD ["yarn", "start"]

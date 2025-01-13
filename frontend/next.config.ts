@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  output: 'standalone', // SSR 기반 배포를 위한 설정
 };
 
 export default nextConfig;

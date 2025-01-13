@@ -20,7 +20,7 @@ export const extractKoreanKeywords = async (
   description: string,
 ): Promise<string[]> => {
   const scriptPath = path.resolve(__dirname, './keyword_extractor.py'); // Python 스크립트 경로
-  console.log(title);
+  console.log(scriptPath);
 
   // HTML 엔터티 제거 및 텍스트 정리
   const cleanedTitle = removeHtmlTags(he.decode(title));
@@ -31,10 +31,10 @@ export const extractKoreanKeywords = async (
     description: cleanedDescription,
   });
 
-  console.log('디코딩 및 태그 제거 완료 제목:', cleanedTitle);
-  console.log('디코딩 및 태그 제거 완료 설명:', cleanedDescription);
-  console.log('최종 전달 JSON -----');
-  console.log(input);
+  // console.log('디코딩 및 태그 제거 완료 제목:', cleanedTitle);
+  // console.log('디코딩 및 태그 제거 완료 설명:', cleanedDescription);
+  // console.log('최종 전달 JSON -----');
+  // console.log(input);
 
   // **따옴표**와 **백슬래시** 이스케이프
   const escapedJSON = input
@@ -44,20 +44,25 @@ export const extractKoreanKeywords = async (
     .replace(/"/g, '\\"');
 
   return new Promise((resolve, reject) => {
-    // Python 명령어 실행
-    exec(
+    const pythonProcess = exec(
       `python ${scriptPath} "${escapedJSON}"`,
       { maxBuffer: 1024 * 1024, encoding: 'utf-8' },
       (error, stdout, stderr) => {
         if (error) {
-          console.error('Python script error:', stderr);
+          console.error('Python script error (stderr):', stderr);
           reject(new Error(`Python script execution failed: ${stderr.trim()}`));
           return;
         }
+
+        // stderr 로그 확인
+        if (stderr.trim()) {
+          console.warn('Python script logs (stderr):', stderr);
+        }
+
         try {
-          console.log('Raw Python Output:', stdout); // 여기서 한글이 깨지는지 확인
-          const keywords = JSON.parse(stdout.trim());
-          console.log('추출된 키워드:', keywords);
+          console.log('Raw Python Output (stdout):', stdout.trim());
+          const keywords = JSON.parse(stdout.trim()); // JSON 데이터만 파싱
+          console.log('node임 지금 - 추출된 키워드:', keywords);
           resolve(keywords);
         } catch (parseError) {
           console.error('JSON 파싱 오류:', parseError);
